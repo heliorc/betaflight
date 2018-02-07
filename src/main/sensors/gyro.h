@@ -70,10 +70,24 @@ typedef struct gyroConfig_s {
     uint16_t gyro_soft_notch_hz_2;
     uint16_t gyro_soft_notch_cutoff_2;
     gyroOverflowCheck_e checkOverflow;
+
+    int16_t  gyro_offset_yaw;
+#if defined(USE_IMUF)
+    uint16_t imuf_mode;
+    uint16_t imuf_pitch_q;
+    uint16_t imuf_pitch_r;
+    uint16_t imuf_pitch_p;
+    uint16_t imuf_roll_q;
+    uint16_t imuf_roll_r;
+    uint16_t imuf_roll_p;
+    uint16_t imuf_yaw_q;
+    uint16_t imuf_yaw_r;
+    uint16_t imuf_yaw_p;
+#else
     uint16_t gyro_filter_q;
     uint16_t gyro_filter_r;
     uint16_t gyro_filter_p;
-    int16_t  gyro_offset_yaw;
+#endif
 } gyroConfig_t;
 
 PG_DECLARE(gyroConfig_t, gyroConfig);
