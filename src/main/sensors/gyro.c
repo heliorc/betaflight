@@ -360,7 +360,14 @@ STATIC_UNIT_TESTED gyroSensor_e gyroDetect(gyroDev_t *dev)
         }
         FALLTHROUGH;
 #endif
-
+#ifdef USE_IMUF
+    case GYRO_IMUF:
+        if (imufDetect(dev)) {
+            gyroHardware = GYRO_IMUF;
+            break;
+        }
+        FALLTHROUGH;
+#endif
 #ifdef USE_FAKE_GYRO
     case GYRO_FAKE:
         if (fakeGyroDetect(dev)) {
@@ -369,7 +376,6 @@ STATIC_UNIT_TESTED gyroSensor_e gyroDetect(gyroDev_t *dev)
         }
         FALLTHROUGH;
 #endif
-
     default:
         gyroHardware = GYRO_NONE;
     }
@@ -419,6 +425,7 @@ static bool gyroInitSensor(gyroSensor_t *gyroSensor)
     case GYRO_ICM20602:
     case GYRO_ICM20608G:
     case GYRO_ICM20689:
+    case GYRO_IMUF:
         // do nothing, as gyro supports 32kHz
         break;
     default:

@@ -28,6 +28,7 @@
 
 #define BEEPER                  PC15
 
+#define USE_DSHOT
 #define USE_DSHOT_DMAR
 
 #define INVERTER_PIN_UART1      PA9
@@ -50,7 +51,7 @@
 
 // MPU6000 interrupts
 #define USE_FAKE_GYRO
-#define USE_IMUF
+// #define USE_IMUF
 #define USE_EXTI
 #define MPU_INT_EXTI            PC4
 #define USE_MPU_DATA_READY_SIGNAL
@@ -64,7 +65,6 @@
 #define USE_VCP
 
 #define VBUS_SENSING_PIN        PC5
-
 
 #define USE_OSD
 #define USE_MAX7456
@@ -146,4 +146,4 @@
 #define TARGET_IO_PORTD         (BIT(2))
 
 #define USABLE_TIMER_CHANNEL_COUNT 7
-#define USED_TIMERS             ( TIM_N(1) | TIM_N(8) | TIM_N(4) | TIM_N(12) )
+#define USED_TIMERS             ( TIM_N(1) | TIM_N(3) | TIM_N(4) | TIM_N(12) )

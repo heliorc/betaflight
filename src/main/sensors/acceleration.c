@@ -51,6 +51,7 @@
 #include "drivers/accgyro/accgyro_spi_mpu6000.h"
 #include "drivers/accgyro/accgyro_spi_mpu6500.h"
 #include "drivers/accgyro/accgyro_spi_mpu9250.h"
+#include "drivers/accgyro/helio_spi_imuf.h"
 #include "drivers/bus_spi.h"
 
 #include "fc/config.h"
@@ -295,6 +296,15 @@ retry:
         FALLTHROUGH;
 #endif
 
+#ifdef USE_IMUF
+    case ACC_IMUF:
+        if (imufDetect(dev)) {
+            accHardware = ACC_IMUF;
+            break;
+        }
+        FALLTHROUGH;
+#endif
+
 #ifdef USE_FAKE_ACC
     case ACC_FAKE:
         if (fakeAccDetect(dev)) {
@@ -303,6 +313,7 @@ retry:
         }
         FALLTHROUGH;
 #endif
+
 
     default:
     case ACC_NONE: // disable ACC
