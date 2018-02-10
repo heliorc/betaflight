@@ -296,9 +296,9 @@ retry:
         FALLTHROUGH;
 #endif
 
-#ifdef USE_IMUF
+#ifdef USE_GYRO_IMUF9001
     case ACC_IMUF:
-        if (imufDetect(dev)) {
+        if (imufAccDetect(dev)) {
             accHardware = ACC_IMUF;
             break;
         }

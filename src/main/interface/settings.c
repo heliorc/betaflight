@@ -90,7 +90,7 @@
 
 // Sensor names (used in lookup tables for *_hardware settings and in status command output)
 // sync with accelerationSensor_e
-#if defined(USE_IMUF)
+#if defined(USE_GYRO_IMUF9001)
 // sync with baroSensor_e
 const char * const lookupTableAccHardware[] = {
     "ACC_IMUF"
@@ -351,7 +351,7 @@ const clivalue_t valueTable[] = {
     { "gyro_notch1_cutoff",         VAR_UINT16 | MASTER_VALUE, .config.minmax = { 0, 16000 }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, gyro_soft_notch_cutoff_1) },
     { "gyro_notch2_hz",             VAR_UINT16 | MASTER_VALUE, .config.minmax = { 0, 16000 }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, gyro_soft_notch_hz_2) },
     { "gyro_notch2_cutoff",         VAR_UINT16 | MASTER_VALUE, .config.minmax = { 0, 16000 }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, gyro_soft_notch_cutoff_2) },
-#if defined(USE_IMUF)
+#if defined(USE_GYRO_IMUF9001)
     { "imuf_mode",                  VAR_UINT16 | MASTER_VALUE, .config.minmax = { 0, 255   }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, imuf_mode) },
     { "imuf_pitch_q",               VAR_UINT16 | MASTER_VALUE, .config.minmax = { 0, 16000 }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, imuf_pitch_q) },
     { "imuf_pitch_r",               VAR_UINT16 | MASTER_VALUE, .config.minmax = { 0, 16000 }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, imuf_pitch_r) },

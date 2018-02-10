@@ -73,7 +73,7 @@ typedef struct gyroConfig_s {
     gyroOverflowCheck_e checkOverflow;
 
     int16_t  gyro_offset_yaw;
-#if defined(USE_IMUF)
+#if defined(USE_GYRO_IMUF9001)
     uint16_t imuf_mode;
     uint16_t imuf_pitch_q;
     uint16_t imuf_pitch_r;

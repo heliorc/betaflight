@@ -49,11 +49,6 @@
 // #define ACC_MPU6500_ALIGN       CW0_DEG
 
 
-// MPU6000 interrupts
-#define USE_FAKE_GYRO
-// #define USE_IMUF
-
-
 #define USE_FAST_SPI_DRIVER
 #define USE_GYRO_IMUF9001
 #define IMUF9001_CS_PIN         PB1
