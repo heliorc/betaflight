@@ -362,7 +362,7 @@ STATIC_UNIT_TESTED gyroSensor_e gyroDetect(gyroDev_t *dev)
 #endif
 #ifdef USE_GYRO_IMUF9001
     case GYRO_IMUF:
-        if (imufGyroDetect(dev)) {
+        if (imuf9001GyroDetect(dev)) {
             gyroHardware = GYRO_IMUF;
             break;
         }

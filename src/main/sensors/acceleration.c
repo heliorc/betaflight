@@ -298,7 +298,7 @@ retry:
 
 #ifdef USE_GYRO_IMUF9001
     case ACC_IMUF:
-        if (imufAccDetect(dev)) {
+        if (imuf9001AccDetect(dev)) {
             accHardware = ACC_IMUF;
             break;
         }

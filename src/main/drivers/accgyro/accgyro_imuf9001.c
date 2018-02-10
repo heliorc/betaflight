@@ -36,7 +36,14 @@
 
 static gyroDev_t *gyroD;
 static accDev_t *accD;
-static void imuf9001SpiInit(const busDevice_t *bus)
+
+int imuf9001SpiDetect(const busDevice_t *bus)
+{
+    imuf9001SpiInit(bus);
+    return 99;
+}
+
+void imuf9001SpiInit(const busDevice_t *bus)
 {
     static bool hardwareInitialised = false;
 
@@ -62,7 +69,7 @@ bool imufSendReceiveSpiBlocking(const busDevice_t *bus, uint8_t *dataTx, uint8_t
     return true;
 }
 
-static int imuf9001SendReceiveCommand(gyroCommands_t commandToSend, imufCommand_t *reply, imufCommand_t *data)
+int imuf9001SendReceiveCommand(gyroCommands_t commandToSend, imufCommand_t *reply, imufCommand_t *data)
 {
 
     imufCommand_t command;
@@ -89,7 +96,7 @@ static int imuf9001SendReceiveCommand(gyroCommands_t commandToSend, imufCommand_
         delayMicroseconds(1000);
         if( IORead(IOGetByTag(gyroD->mpuIntExtiTag)) ) //IMU is ready to talk
         {
-            imufSendReceiveSpiBlocking(gyroD->bus, (uint8_t *)&command, (uint8_t *)reply, sizeof(imufCommand_t));
+            imufSendReceiveSpiBlocking(&(gyroD->bus), (uint8_t *)&command, (uint8_t *)reply, sizeof(imufCommand_t));
 
             //this is the only valid reply we'll get if we're in BL mode
             if(reply->command == reply->crc && reply->command == IMUF_COMMAND_LISTENING ) //this tells us the IMU was listening for a command, else we need to reset synbc
@@ -102,12 +109,12 @@ static int imuf9001SendReceiveCommand(gyroCommands_t commandToSend, imufCommand_
 
                     delayMicroseconds(100); //give pin time to set
 
-                    if( IORead(IOGetByTag(gyro->mpuIntExtiTag)) ) //IMU is ready to talk
+                    if( IORead(IOGetByTag(gyroD->mpuIntExtiTag)) ) //IMU is ready to talk
                     {
                         //reset attempts
                         attempt = 100;
 
-                        imufSendReceiveSpiBlocking(gyroD->bus, (uint8_t *)&command, (uint8_t *)reply, sizeof(imufCommand_t));
+                        imufSendReceiveSpiBlocking(&(gyroD->bus), (uint8_t *)&command, (uint8_t *)reply, sizeof(imufCommand_t));
 
                         if(reply->command == reply->crc && reply->command == commandToSend ) //this tells us the IMU understood the last command
                         {
@@ -121,15 +128,14 @@ static int imuf9001SendReceiveCommand(gyroCommands_t commandToSend, imufCommand_
     return 0;
 }
 
-void imufSpiAccInit(accDev_t *acc)
+void imuf9001SpiAccInit(accDev_t *acc)
 {
-    imuf9001SpiInit(&(acc->bus);
-     //    ////making sausages
-    IOConfigGPIO(acc->mpuIntExtiTag, IOCFG_IPD);
+    //  //    ////making sausages
+    // IOConfigGPIO(acc->mpuIntExtiTag, IOCFG_IPD);
 
-    //config exti as input, not exti for now
-    IOInit(acc->mpuIntExtiTag, OWNER_MPU_EXTI, 0);
-    IOConfigGPIO(acc->mpuIntExtiTag, IOCFG_IPD);
+    // //config exti as input, not exti for now
+    // IOInit(acc->mpuIntExtiTag, OWNER_MPU_EXTI, 0);
+    // IOConfigGPIO(acc->mpuIntExtiTag, IOCFG_IPD);
 
     spiSetDivisor(acc->bus.busdev_u.spi.instance, SPI_CLOCK_SLOW);
     delayMicroseconds(1);
@@ -139,17 +145,16 @@ void imufSpiAccInit(accDev_t *acc)
     imuf9001SendReceiveCommand(IMUF_COMMAND_SETUP, &txData, &rxData);
 
     // Disable Primary I2C Interface
-    spiBusWriteRegister(&gyro->bus, MPU_RA_USER_CTRL, MPU6500_BIT_I2C_IF_DIS);
+    // spiBusWriteRegister(&(accD->bus), MPU_RA_USER_CTRL, MPU6500_BIT_I2C_IF_DIS);
     delay(100);
 
-    spiSetDivisor(gyro->bus.busdev_u.spi.instance, SPI_CLOCK_FAST);
+    // spiSetDivisor(gyro->bus.busdev_u.spi.instance, SPI_CLOCK_FAST);
     delayMicroseconds(1);
 }
 
-void imufSpiGyroInit(gyroDev_t *gyro)
+void imuf9001SpiGyroInit(gyroDev_t *gyro)
 {
 
-    imuf9001SpiInit(&(gyro->bus);
     //    ////making sausages
     IOConfigGPIO(gyro->mpuIntExtiTag, IOCFG_IPD);
 
@@ -166,7 +171,7 @@ void imufSpiGyroInit(gyroDev_t *gyro)
     imuf9001SendReceiveCommand(IMUF_COMMAND_SETUP, &txData, &rxData);
 
     // Disable Primary I2C Interface
-    spiBusWriteRegister(&gyro->bus, MPU_RA_USER_CTRL, MPU6500_BIT_I2C_IF_DIS);
+    // spiBusWriteRegister(&gyro->bus, MPU_RA_USER_CTRL, MPU6500_BIT_I2C_IF_DIS);
     delay(100);
 
     spiSetDivisor(gyro->bus.busdev_u.spi.instance, SPI_CLOCK_FAST);
@@ -178,7 +183,7 @@ bool imuf9001ReadGyro(gyroDev_t *gyro)
 {
     imufCommand_t txData;
     imufCommand_t rxData;
-    imuf9001SendReceiveCommand(IMUF_COMMAND_LISTENING, txData, rxData);
+    imuf9001SendReceiveCommand(IMUF_COMMAND_LISTENING, &txData, &rxData);
     // get me data imuf9001SendReceiveCommand()
     //set the gyro data for each axis.
     
@@ -201,7 +206,7 @@ uint8_t imuf9001ReadAcc(const accDev_t *gyro)
 {
     imufCommand_t txData;
     imufCommand_t rxData;
-    imuf9001SendReceiveCommand(IMUF_COMMAND_LISTENING, txData, rxData);
+    imuf9001SendReceiveCommand(IMUF_COMMAND_LISTENING, &txData, &rxData);
     //read to the accDev_t
 
     // get me data imuf9001SendReceiveCommand
@@ -219,9 +224,9 @@ uint8_t imuf9001ReadAcc(const accDev_t *gyro)
     // return mpuDetected;
 }
 
-bool imufAccDetect(accDev_t *acc)
+int imuf9001AccDetect(accDev_t *acc)
 {
-    accD = acc
+    accD = acc;
     // MPU6500 is used as a equivalent of other accelerometers by some flight controllers
     switch (acc->mpuDetectionResult.sensor) {
     case IMUF_9001_SPI:
@@ -230,13 +235,13 @@ bool imufAccDetect(accDev_t *acc)
         return false;
     }
 
-    acc->initFn = imufSpiAccInit;
+    acc->initFn = imuf9001SpiAccInit;
     acc->readFn = imuf9001ReadAcc;
 
     return true;
 }
 
-bool imufGyroDetect(gyroDev_t *gyro)
+int imuf9001GyroDetect(gyroDev_t *gyro)
 {
     gyroD = gyro;
     // MPU6500 is used as a equivalent of other gyros by some flight controllers
@@ -247,7 +252,7 @@ bool imufGyroDetect(gyroDev_t *gyro)
         return false;
     }
 
-    gyro->initFn = imufSpiGyroInit;
+    gyro->initFn = imuf9001SpiGyroInit;
     gyro->readFn = imuf9001ReadGyro;
 
     // 16.4 dps/lsb scalefactor

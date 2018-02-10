@@ -262,11 +262,11 @@ static bool detectSPISensorsAndUpdateDetectionResult(gyroDev_t *gyro)
     #endif
     #ifdef IMUF9001_CS_PIN
         gyro->bus.busdev_u.spi.csnPin = gyro->bus.busdev_u.spi.csnPin == IO_NONE ? IOGetByTag(IO_TAG(IMUF9001_CS_PIN)) : gyro->bus.busdev_u.spi.csnPin;
+    #else
+        #error IMUF9001 must use a CS pin
     #endif
-#else
-    #error IMUF9001 must use a CS pin
+    sensor = imuf9001SpiDetect(&gyro->bus);
 #endif
-    sensor = imuf9001SpiDetect(&gyro);
     // some targets using MPU_9250_SPI, ICM_20608_SPI or ICM_20602_SPI state sensor is MPU_65xx_SPI
     if (sensor != MPU_NONE) {
         gyro->mpuDetectionResult.sensor = sensor;

@@ -3,6 +3,8 @@
 
 #include "platform.h"
 
+#include "accgyro.h"
+#include "accgyro_mpu.h"
 #include "helio_spi_imuf.h"
 #include "accgyro_imuf9001.h"
 
@@ -95,21 +97,21 @@ static gyroToBoardCommMode_t VerifyAllowedCommMode(uint32_t commMode)
     }
 }
 
-int ImufInit(loopCtrl_e gyroLoop)
+int ImufInit()
 {
-    (void)gyroLoop;
+    // (void)gyroLoop;
 
     uint32_t attempt;
     imufCommand_t reply;
     imufCommand_t data;
 
-    mainConfig.gyroConfig.imufMode = VerifyAllowedCommMode(mainConfig.gyroConfig.imufMode);
+    // mainConfig.gyroConfig.imufMode = VerifyAllowedCommMode(mainConfig.gyroConfig.imufMode);
 
-    data.param1 = mainConfig.gyroConfig.imufMode; //todo verify this is allowed
-    data.param2 = mainConfig.gyroConfig.gyroRotation;
-    data.param3 = ( (uint16_t)mainConfig.gyroConfig.filterPitchQ << 16 ) | (uint16_t)mainConfig.gyroConfig.filterPitchR;
-    data.param4 = ( (uint16_t)mainConfig.gyroConfig.filterRollQ << 16 ) | (uint16_t)mainConfig.gyroConfig.filterRollR;
-    data.param5 = ( (uint16_t)mainConfig.gyroConfig.filterYawQ << 16 ) | (uint16_t)mainConfig.gyroConfig.filterYawR;
+    // data.param1 = mainConfig.gyroConfig.imufMode; //todo verify this is allowed
+    // data.param2 = mainConfig.gyroConfig.gyroRotation;
+    // data.param3 = ( (uint16_t)mainConfig.gyroConfig.filterPitchQ << 16 ) | (uint16_t)mainConfig.gyroConfig.filterPitchR;
+    // data.param4 = ( (uint16_t)mainConfig.gyroConfig.filterRollQ << 16 ) | (uint16_t)mainConfig.gyroConfig.filterRollR;
+    // data.param5 = ( (uint16_t)mainConfig.gyroConfig.filterYawQ << 16 ) | (uint16_t)mainConfig.gyroConfig.filterYawR;
 
     for (attempt = 0; attempt < 3; attempt++)
     {
@@ -119,7 +121,7 @@ int ImufInit(loopCtrl_e gyroLoop)
         if (ImufSendReceiveCommand(IMUF_COMMAND_SETUP, &reply, &data))
         {
             //command a success
-            currentCommMode = mainConfig.gyroConfig.imufMode;
+            // currentCommMode = mainConfig.gyroConfig.imufMode;
             return(1);
         }
     }
@@ -133,23 +135,23 @@ static void ImufReset(void)
     //init Reset Pin
     GPIO_InitTypeDef GPIO_InitStructure;
 
-    HAL_GPIO_DeInit(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin);
-    HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 1);
+    // HAL_GPIO_DeInit(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin);
+    // HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 1);
 
-    GPIO_InitStructure.Pin   = GYRO_RESET_GPIO_Pin;
-    GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStructure.Pull  = GPIO_PULLUP;
-    HAL_GPIO_Init(ports[GYRO_RESET_GPIO_Port], &GPIO_InitStructure);
+    // GPIO_InitStructure.Pin   = GYRO_RESET_GPIO_Pin;
+    // GPIO_InitStructure.Mode  = GPIO_MODE_OUTPUT_PP;
+    // GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
+    // GPIO_InitStructure.Pull  = GPIO_PULLUP;
+    // HAL_GPIO_Init(ports[GYRO_RESET_GPIO_Port], &GPIO_InitStructure);
 
     //reset IMU
-    HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 0);
-    DelayMs(100);
-    HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 1);
-    DelayMs(100);
-    HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 0);
-    DelayMs(100);
-    HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 1);
+    // HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 0);
+    // DelayMs(100);
+    // HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 1);
+    // DelayMs(100);
+    // HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 0);
+    // DelayMs(100);
+    // HAL_GPIO_WritePin(ports[GYRO_RESET_GPIO_Port], GYRO_RESET_GPIO_Pin, 1);
 }
 
 int ImufDetect(gyroDev_t *gyro)
@@ -167,9 +169,8 @@ int ImufDetect(gyroDev_t *gyro)
             switch ( (*(imufVersion_t *)&(reply.param1)).firmware )
             {
                 case 101: //version 101 allowed right now
-                    deviceWhoAmI = (*(imufVersion_t *)&(reply.param1)).firmware;
-                    gyro.
-                    return deviceWhoAmI;
+                    // deviceWhoAmI = (*(imufVersion_t *)&(reply.param1)).firmware;
+                    // return deviceWhoAmI;
                 break;
                 default:
                 break;
@@ -187,21 +188,21 @@ void ImufDeviceRead(void)
 void ImufDeviceReadComplete(void)
 {
     //need to calibrate the imuf, we wait 1000 cycles to do it, or about 7ms at 16 KHz input.
-    if(gyroCalibrationCycles)
-    {
-        if(gyroCalibrationCycles-- == GYRO_CALIBRATION_CYCLES)
-        {
-            //first calibration step, let's send the command
-            (*(imufCommand_t *)(&imuTxCommFrame.gyroFrame)).command = 0x63636363;
-            (*(imufCommand_t *)(&imuTxCommFrame.gyroFrame)).crc     = 0x63636363;
-        }
-        else
-        {
-            (*(imufCommand_t *)(&imuTxCommFrame.gyroFrame)).command = IMUF_COMMAND_NONE;
-            (*(imufCommand_t *)(&imuTxCommFrame.gyroFrame)).crc     = IMUF_COMMAND_NONE;
-        }
+    // if(gyroCalibrationCycles)
+    // {
+    //     if(gyroCalibrationCycles-- == GYRO_CALIBRATION_CYCLES)
+    //     {
+    //         //first calibration step, let's send the command
+    //         (*(imufCommand_t *)(&imuTxCommFrame.gyroFrame)).command = 0x63636363;
+    //         (*(imufCommand_t *)(&imuTxCommFrame.gyroFrame)).crc     = 0x63636363;
+    //     }
+    //     else
+    //     {
+    //         (*(imufCommand_t *)(&imuTxCommFrame.gyroFrame)).command = IMUF_COMMAND_NONE;
+    //         (*(imufCommand_t *)(&imuTxCommFrame.gyroFrame)).crc     = IMUF_COMMAND_NONE;
+    //     }
 
-    }
+    // }
 
     if ( (currentCommMode == GTBCM_GYRO_ACC_FILTER_F) || (currentCommMode == GTBCM_GYRO_ACC_QUAT_FILTER_F))
     {
@@ -214,25 +215,25 @@ void ImufDeviceReadComplete(void)
             ( imuRxCommFrame.gyroFrame.accelZ < -20.0f || imuRxCommFrame.gyroFrame.accelZ > 20.0f)
         )
         {
-            julian++;
+            // julian++;
         }
         else
         {
-            dpsGyroArray[0]     = -imuRxCommFrame.gyroFrame.gyroZ;
-            dpsGyroArray[1]     =  imuRxCommFrame.gyroFrame.gyroX;
-            dpsGyroArray[2]     = -imuRxCommFrame.gyroFrame.gyroY;
-            geeForceAccArray[0] =  imuRxCommFrame.gyroFrame.accelX;
-            geeForceAccArray[1] =  imuRxCommFrame.gyroFrame.accelY;
-            geeForceAccArray[2] =  imuRxCommFrame.gyroFrame.accelZ;
+            // dpsGyroArray[0]     = -imuRxCommFrame.gyroFrame.gyroZ;
+            // dpsGyroArray[1]     =  imuRxCommFrame.gyroFrame.gyroX;
+            // dpsGyroArray[2]     = -imuRxCommFrame.gyroFrame.gyroY;
+            // geeForceAccArray[0] =  imuRxCommFrame.gyroFrame.accelX;
+            // geeForceAccArray[1] =  imuRxCommFrame.gyroFrame.accelY;
+            // geeForceAccArray[2] =  imuRxCommFrame.gyroFrame.accelZ;
 
             if(currentCommMode == GTBCM_GYRO_ACC_QUAT_FILTER_F)
             {
-                attitudeFrameQuat.w =  imuRxCommFrame.imuFrame.w;
-                attitudeFrameQuat.x =  imuRxCommFrame.imuFrame.x;
-                attitudeFrameQuat.y =  imuRxCommFrame.imuFrame.y;
-                attitudeFrameQuat.z =  imuRxCommFrame.imuFrame.z;
+                // attitudeFrameQuat.w =  imuRxCommFrame.imuFrame.w;
+                // attitudeFrameQuat.x =  imuRxCommFrame.imuFrame.x;
+                // attitudeFrameQuat.y =  imuRxCommFrame.imuFrame.y;
+                // attitudeFrameQuat.z =  imuRxCommFrame.imuFrame.z;
             }
-            InlineFlightCode(dpsGyroArray);
+            // InlineFlightCode(dpsGyroArray);
 
         }
 
