@@ -157,6 +157,8 @@ static void imuf9001SpiInit(const busDevice_t *bus)
     IOConfigGPIO(bus->busdev_u.spi.csnPin, SPI_IO_CS_CFG);
     IOHi(bus->busdev_u.spi.csnPin);
 
+    //    ////making sausages
+
     //config exti as input, not exti for now
     IOInit(gyro->mpuIntExtiTag, OWNER_MPU_EXTI, 0);
     IOConfigGPIO(gyro->mpuIntExtiTag, IOCFG_IPD);
