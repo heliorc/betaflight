@@ -872,6 +872,7 @@ static FAST_CODE void gyroUpdateSensor(gyroSensor_t *gyroSensor, timeUs_t curren
 
 FAST_CODE void gyroUpdate(timeUs_t currentTimeUs)
 {
+    //called by scheduler
     gyroUpdateSensor(&gyroSensor1, currentTimeUs);
 }
 

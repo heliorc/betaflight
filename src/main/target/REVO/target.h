@@ -223,7 +223,54 @@
 
 #define USE_SPI
 
-#define USE_SPI_DEVICE_1
+#define USE_DMA_SPI_DEVICE
+
+#define GYRO_MISO_PIN_SRC               GPIO_PinSource4
+#define GYRO_MISO_PIN                   GPIO_Pin_4
+#define GYRO_MISO_PORT                  GPIOB
+#define GYRO_MISO_ALTERNATE             GPIO_AF_6
+
+#define DMA_SPI_NSS_PIN_SRC        GPIO_PinSource4
+#define DMA_SPI_NSS_PIN            GPIO_Pin_4
+#define DMA_SPI_NSS_PORT           GPIOA
+#define DMA_SPI_NSS_AF             GPIO_AF_SPI1
+#define DMA_SPI_SCK_PIN_SRC        GPIO_PinSource5
+#define DMA_SPI_SCK_PIN            GPIO_Pin_5
+#define DMA_SPI_SCK_PORT           GPIOA
+#define DMA_SPI_SCK_AF             GPIO_AF_SPI1
+#define DMA_SPI_MISO_PIN_SRC       GPIO_PinSource6
+#define DMA_SPI_MISO_PIN           GPIO_Pin_6
+#define DMA_SPI_MISO_PORT          GPIOA
+#define DMA_SPI_MISO_AF            GPIO_AF_SPI1
+#define DMA_SPI_MOSI_PIN_SRC       GPIO_PinSource7
+#define DMA_SPI_MOSI_PIN           GPIO_Pin_7
+#define DMA_SPI_MOSI_PORT          GPIOA
+#define DMA_SPI_MOSI_AF            GPIO_AF_SPI1
+
+#define DMA_SPI_SPI                SPI1
+#define DMA_SPI_BAUDRATE           SPI_BaudRatePrescaler_4
+#define DMA_SPI_CPOL               SPI_CPOL_High
+#define DMA_SPI_CPHA               SPI_CPHA_2Edge
+
+#define DMA_SPI_DMA                DMA2
+#define DMA_SPI_TX_DMA_STREAM      DMA2_Stream3
+#define DMA_SPI_RX_DMA_STREAM      DMA2_Stream0
+#define DMA_SPI_TX_DMA_CHANNEL     DMA_Channel_3
+#define DMA_SPI_RX_DMA_CHANNEL     DMA_Channel_3
+#define DMA_SPI_TX_DMA_HANDLER     DMA2_Stream3_IRQHandler
+#define DMA_SPI_RX_DMA_HANDLER     DMA2_Stream0_IRQHandler
+#define DMA_SPI_TX_DMA_IRQn        DMA2_Stream3_IRQn
+#define DMA_SPI_RX_DMA_IRQn        DMA2_Stream0_IRQn
+
+#define DMA_SPI_DMA_RX_PRE_PRI     0x0E
+#define DMA_SPI_DMA_RX_SUB_PRI     0x0E
+
+#define DMA_SPI_TX_DMA_FLAG_ALL      DMA_FLAG_FEIF3 | DMA_FLAG_DMEIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_TCIF3
+#define DMA_SPI_TX_DMA_FLAG_GL       DMA_FLAG_TCIF3
+#define DMA_SPI_TX_DMA_FLAG_TC       DMA_FLAG_TCIF3
+#define DMA_SPI_RX_DMA_FLAG_ALL      DMA_FLAG_FEIF0 | DMA_FLAG_DMEIF0 | DMA_FLAG_TEIF0 | DMA_FLAG_HTIF0 | DMA_FLAG_TCIF0
+#define DMA_SPI_RX_DMA_FLAG_TC       DMA_FLAG_TCIF0
+#define DMA_SPI_RX_DMA_FLAG_GL       DMA_FLAG_TCIF0
 
 #define USE_SPI_DEVICE_3
 #define SPI3_NSS_PIN            PB3

@@ -70,6 +70,7 @@
 #include "drivers/usb_io.h"
 #include "drivers/vtx_rtc6705.h"
 #include "drivers/vtx_common.h"
+#include "drivers/dma_spi.h"
 
 #include "fc/config.h"
 #include "fc/fc_init.h"
@@ -435,6 +436,10 @@ void init(void)
 
     // Initialize CS lines and keep them high
     spiPreInit();
+
+#ifdef USE_DMA_SPI_DEVICE
+    dmaSpiInit();
+#endif
 
 #ifdef USE_SPI_DEVICE_1
     spiInit(SPIDEV_1);

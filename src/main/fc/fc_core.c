@@ -917,6 +917,8 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
     // 1 - pidController()
     // 2 - subTaskMotorUpdate()
     // 3 - subTaskMainSubprocesses()
+    //when using dma, this shouldn't run until the dma spi transfer flag is complete
+    //gyroUpdateSensor in gyro.c is called by gyroUpdate
     gyroUpdate(currentTimeUs);
     DEBUG_SET(DEBUG_PIDLOOP, 0, micros() - currentTimeUs);
 
