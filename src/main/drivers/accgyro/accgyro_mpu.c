@@ -106,17 +106,21 @@ static void mpu6050FindRevision(gyroDev_t *gyro)
 #if defined(MPU_INT_EXTI)
 static void mpuIntExtiHandler(extiCallbackRec_t *cb)
 {
-#ifdef DEBUG_MPU_DATA_READY_INTERRUPT
-    static uint32_t lastCalledAtUs = 0;
-    const uint32_t nowUs = micros();
-    debug[0] = (uint16_t)(nowUs - lastCalledAtUs);
-    lastCalledAtUs = nowUs;
-#endif
-    gyroDev_t *gyro = container_of(cb, gyroDev_t, exti);
-    gyro->dataReady = true;
-#ifdef DEBUG_MPU_DATA_READY_INTERRUPT
-    const uint32_t now2Us = micros();
-    debug[1] = (uint16_t)(now2Us - nowUs);
+#ifdef USE_DMA_SPI_DEVICE
+    //start dma read
+#else
+    #ifdef DEBUG_MPU_DATA_READY_INTERRUPT
+        static uint32_t lastCalledAtUs = 0;
+        const uint32_t nowUs = micros();
+        debug[0] = (uint16_t)(nowUs - lastCalledAtUs);
+        lastCalledAtUs = nowUs;
+    #endif
+        gyroDev_t *gyro = container_of(cb, gyroDev_t, exti);
+        gyro->dataReady = true;
+    #ifdef DEBUG_MPU_DATA_READY_INTERRUPT
+        const uint32_t now2Us = micros();
+        debug[1] = (uint16_t)(now2Us - nowUs);
+    #endif
 #endif
 }
 

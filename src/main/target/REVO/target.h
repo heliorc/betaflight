@@ -223,12 +223,9 @@
 
 #define USE_SPI
 
-#define USE_DMA_SPI_DEVICE
 
-#define GYRO_MISO_PIN_SRC               GPIO_PinSource4
-#define GYRO_MISO_PIN                   GPIO_Pin_4
-#define GYRO_MISO_PORT                  GPIOB
-#define GYRO_MISO_ALTERNATE             GPIO_AF_6
+
+#define USE_DMA_SPI_DEVICE
 
 #define DMA_SPI_NSS_PIN_SRC        GPIO_PinSource4
 #define DMA_SPI_NSS_PIN            GPIO_Pin_4
@@ -271,6 +268,8 @@
 #define DMA_SPI_RX_DMA_FLAG_ALL      DMA_FLAG_FEIF0 | DMA_FLAG_DMEIF0 | DMA_FLAG_TEIF0 | DMA_FLAG_HTIF0 | DMA_FLAG_TCIF0
 #define DMA_SPI_RX_DMA_FLAG_TC       DMA_FLAG_TCIF0
 #define DMA_SPI_RX_DMA_FLAG_GL       DMA_FLAG_TCIF0
+
+
 
 #define USE_SPI_DEVICE_3
 #define SPI3_NSS_PIN            PB3

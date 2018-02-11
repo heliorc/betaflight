@@ -759,9 +759,15 @@ static void checkForOverflow(gyroSensor_t *gyroSensor, timeUs_t currentTimeUs)
 
 static FAST_CODE void gyroUpdateSensor(gyroSensor_t *gyroSensor, timeUs_t currentTimeUs)
 {
-    if (!gyroSensor->gyroDev.readFn(&gyroSensor->gyroDev)) {
-        return;
-    }
+    #ifdef USE_DMA_SPI_DEVICE
+        if (dmaSpiReadStatus != DMA_SPI_READ_DONE) {
+            return;
+        }
+    #else
+        if (!gyroSensor->gyroDev.readFn(&gyroSensor->gyroDev)) {
+            return;
+        }
+    #endif
     gyroSensor->gyroDev.dataReady = false;
 
     if (isGyroSensorCalibrationComplete(gyroSensor)) {

@@ -7,6 +7,8 @@
 
 #ifdef USE_DMA_SPI_DEVICE
 
+volatile dma_spi_read_status_t dmaSpiReadStatus = DMA_SPI_READ_UNKOWN;
+
 static void dmaSpiCsLo(void)
 {
     gpio_write_pin(DMA_SPI_NSS_PORT, DMA_SPI_NSS_PIN, 0);
@@ -36,13 +38,12 @@ static void dmaSpicleanupspi(void)
 
 void DMA_SPI_RX_DMA_HANDLER(void)
 {
-    if(DMA_GetITStatus(GYRO_RX_DMA_FLAG_TC))
+    if(DMA_GetITStatus(DMA_SPI_RX_DMA_FLAG_TC))
     {
         dmaSpiCsHi();
         dmaSpicleanupspi();
-        //callback here, maybe do it with a flag?
-        //gyroUpdateSensor(&gyroSensor1, currentTimeUs);
-        DMA_ClearITPendingBit(GYRO_RX_DMA_FLAG_TC);         
+        dmaSpiReadStatus = DMA_SPI_READ_DONE;
+        DMA_ClearITPendingBit(DMA_SPI_RX_DMA_FLAG_TC);         
     }
 }
 
@@ -150,5 +151,7 @@ void dmaSpiTransmitReceive(uint8_t* txBuffer, uint8_t* rxBuffer, uint32_t size)
 
     //enable and send
     SPI_Cmd(DMA_SPI_SPI, ENABLE);
+
+    dmaSpiReadStatus = DMA_SPI_READ_IN_PROGRESS;
 }
 #endif
