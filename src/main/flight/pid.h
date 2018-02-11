@@ -129,6 +129,7 @@ extern float axisPID_P[3], axisPID_I[3], axisPID_D[3];
 extern float axisPIDSum[3];
 bool airmodeWasActivated;
 extern uint32_t targetPidLooptime;
+extern biquad_state kdBqFilterState[];
 
 // PIDweight is a scale factor for PIDs which is derived from the throttle and TPA setting, and 100 = 100% scale means no PID reduction
 extern uint8_t PIDweight[3];

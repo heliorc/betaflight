@@ -72,28 +72,40 @@ bool spiInit(SPIDevice device)
     case SPIINVALID:
         return false;
     case SPIDEV_1:
-#ifdef USE_SPI_DEVICE_1
+#if defined(USE_SPI_DMA_DEVICE_1)
+        spiDmaInitDevice(device);
+        return true;
+#elif defined(USE_SPI_DEVICE_1)
         spiInitDevice(device);
         return true;
 #else
         break;
 #endif
     case SPIDEV_2:
-#ifdef USE_SPI_DEVICE_2
+#if defined(USE_SPI_DMA_DEVICE_2)
+        spiDmaInitDevice(device);
+        return true;
+#elif defined(USE_SPI_DEVICE_2)
         spiInitDevice(device);
         return true;
 #else
         break;
 #endif
     case SPIDEV_3:
-#if defined(USE_SPI_DEVICE_3) && !defined(STM32F1)
+#if defined(USE_SPI_DMA_DEVICE_3) && !defined(STM32F1)
+        spiDmaInitDevice(device);
+        return true;
+#elif defined(USE_SPI_DEVICE_3) && !defined(STM32F1)
         spiInitDevice(device);
         return true;
 #else
         break;
 #endif
     case SPIDEV_4:
-#if defined(USE_SPI_DEVICE_4)
+#if defined(USE_SPI_DMA_DEVICE_4)
+        spiDmaInitDevice(device);
+        return true;
+#elif defined(USE_SPI_DEVICE_4)
         spiInitDevice(device);
         return true;
 #else
@@ -101,6 +113,119 @@ bool spiInit(SPIDevice device)
 #endif
     }
     return false;
+}
+
+void SPI1_RX_DMA_HANDLER()
+{
+    if()
+}
+
+void SPI2_RX_DMA_HANDLER()
+{
+
+}
+
+void SPI3_RX_DMA_HANDLER()
+{
+
+}
+
+void spiDmaInit(const busDevice_t *bus)
+{
+    if(bus->busdev_u.spi.instance == SPI1)
+    {
+
+    }
+    //bus->spiCallbackFunction = 
+    typedef void (*spi_tx_done_callback)(void);
+
+    //set fifo threashold for 8 bit i/o
+    SPI_RxFIFOThresholdConfig(bus->busdev_u.spi.instance,SPI_RxFIFOThreshold_QF);
+
+    //set DMA to default state
+    DMA_DeInit(bus->busdev_u.spi.TxDmaChannel);
+    DMA_DeInit(bus->busdev_u.spi.RxDmaChannel);
+
+    dmaInitStruct.DMA_M2M = DMA_M2M_Disable;
+    dmaInitStruct.DMA_Mode = DMA_Mode_Normal;
+    dmaInitStruct.DMA_Priority = DMA_Priority_Medium;
+    dmaInitStruct.DMA_DIR = DMA_DIR_PeripheralDST;
+
+    dmaInitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+    dmaInitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    dmaInitStruct.DMA_PeripheralBaseAddr = (uint32_t)&bus->busdev_u.spi.instance->DR;
+
+    dmaInitStruct.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    dmaInitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    dmaInitStruct.DMA_MemoryBaseAddr = 0; //this is set later when we fire the DMA
+
+    dmaInitStruct.DMA_BufferSize = 1;     //this is set later when we fire the DMA
+
+    DMA_Init(bus->busdev_u.spi.TxDmaChannel, &dmaInitStruct);
+
+    dmaInitStruct.DMA_DIR = DMA_DIR_PeripheralSRC;
+
+    DMA_Init(bus->busdev_u.spi.RxDmaChannel, &dmaInitStruct);
+
+    //setup interrupt
+    nvicInitStruct.NVIC_IRQChannel = GYRO_SPI_RX_DMA_IRQn;
+    nvicInitStruct.NVIC_IRQChannelPreemptionPriority = 0x0e;
+    nvicInitStruct.NVIC_IRQChannelSubPriority = 0x0e;
+    nvicInitStruct.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&nvicInitStruct);
+
+    //set rx done irq
+    DMA_ITConfig(bus->busdev_u.spi.RxDmaChannel, DMA_IT_TC, ENABLE);
+}
+
+void spiBusDmaTransferStart(const busDevice_t *bus, const uint8_t *txData, uint8_t *rxData, int length)
+{
+
+    //enable  CS
+    IOLo(bus->busdev_u.spi.csnPin);
+
+    //set buffer size
+    DMA_SetCurrDataCounter(bus->busdev_u.spi.TxDmaChannel, size);
+    DMA_SetCurrDataCounter(bus->busdev_u.spi.RxDmaChannel, size);
+
+    //set buffer
+    bus->busdev_u.spi.TxDmaChannel->CMAR = (uint32_t)txBuffer;
+    bus->busdev_u.spi.RxDmaChannel->CMAR = (uint32_t)rxBuffer;
+
+    //enable DMA SPI streams
+    DMA_Cmd(bus->busdev_u.spi.TxDmaChannel, ENABLE);
+    DMA_Cmd(bus->busdev_u.spi.RxDmaChannel, ENABLE);
+
+    //enable DMA SPI requests
+    SPI_I2S_DMACmd(bus->busdev_u.spi.instance, SPI_I2S_DMAReq_Tx, ENABLE);
+    SPI_I2S_DMACmd(bus->busdev_u.spi.instance, SPI_I2S_DMAReq_Rx, ENABLE);
+
+    //enable and send
+    SPI_Cmd(bus->busdev_u.spi.instance, ENABLE);
+
+}
+
+void spiBusDmaTransferDone(void)
+{
+    //disable cs
+    IOHi(bus->busdev_u.spi.csnPin);
+
+    //clear DMA flags
+    DMA_ClearFlag(GYRO_SPI_ALL_DMA_FLAGS);
+
+    //disable DMAs
+    DMA_Cmd(bus->busdev_u.spi.TxDmaChannel,DISABLE);
+    DMA_Cmd(bus->busdev_u.spi.RxDmaChannel,DISABLE);  
+
+    //disable SPI DMA requests
+    SPI_I2S_DMACmd(bus->busdev_u.spi.instance, SPI_I2S_DMAReq_Tx, DISABLE);
+    SPI_I2S_DMACmd(bus->busdev_u.spi.instance, SPI_I2S_DMAReq_Rx, DISABLE);
+
+    //disable SPI
+    SPI_Cmd(bus->busdev_u.spi.instance, DISABLE);
+
+    //call read done calback
+    bus->busdev_u.spi.spiCallbackFunction();
 }
 
 uint32_t spiTimeoutUserCallback(SPI_TypeDef *instance)

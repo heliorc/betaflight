@@ -22,6 +22,8 @@
 #include "drivers/bus_i2c.h"
 #include "drivers/io_types.h"
 
+typedef void (*spi_tx_done_callback)(void);
+
 typedef enum {
     BUSTYPE_NONE = 0,
     BUSTYPE_I2C,
@@ -38,6 +40,9 @@ typedef struct busDevice_s {
             SPI_HandleTypeDef* handle; // cached here for efficiency
 #endif
             IO_t csnPin;
+            volatile spi_tx_done_callback spiCallbackFunction;
+            DMA_Channel_TypeDef* TxDmaChannel;
+            DMA_Channel_TypeDef* RxDmaChannel;
         } spi;
         struct deviceI2C_s {
             I2CDevice device;

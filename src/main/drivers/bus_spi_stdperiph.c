@@ -32,6 +32,70 @@
 
 spiDevice_t spiDevice[SPIDEV_COUNT];
 
+void spiDmaInitDevice(SPIDevice device)
+{
+    spiDevice_t *spi = &(spiDevice[device]);
+
+#ifdef SDCARD_SPI_INSTANCE
+    if (spi->dev == SDCARD_SPI_INSTANCE) {
+        spi->leadingEdge = true;
+    }
+#endif
+#ifdef RX_SPI_INSTANCE
+    if (spi->dev == RX_SPI_INSTANCE) {
+        spi->leadingEdge = true;
+    }
+#endif
+
+    // Enable SPI clock
+    RCC_ClockCmd(spi->rcc, ENABLE);
+    RCC_ResetCmd(spi->rcc, ENABLE);
+
+    IOInit(IOGetByTag(spi->sck),  OWNER_SPI_SCK,  RESOURCE_INDEX(device));
+    IOInit(IOGetByTag(spi->miso), OWNER_SPI_MISO, RESOURCE_INDEX(device));
+    IOInit(IOGetByTag(spi->mosi), OWNER_SPI_MOSI, RESOURCE_INDEX(device));
+
+#if defined(STM32F3) || defined(STM32F4)
+    IOConfigGPIOAF(IOGetByTag(spi->sck),  SPI_IO_AF_CFG, spi->af);
+    IOConfigGPIOAF(IOGetByTag(spi->miso), SPI_IO_AF_CFG, spi->af);
+    IOConfigGPIOAF(IOGetByTag(spi->mosi), SPI_IO_AF_CFG, spi->af);
+#elif defined(STM32F10X)
+    IOConfigGPIO(IOGetByTag(spi->sck), SPI_IO_AF_SCK_CFG);
+    IOConfigGPIO(IOGetByTag(spi->miso), SPI_IO_AF_MISO_CFG);
+    IOConfigGPIO(IOGetByTag(spi->mosi), SPI_IO_AF_MOSI_CFG);
+#else
+#error Undefined MCU architecture
+#endif
+
+    // Init SPI hardware
+    SPI_I2S_DeInit(spi->dev);
+
+    SPI_InitTypeDef spiInit;
+    spiInit.SPI_Mode = SPI_Mode_Master;
+    spiInit.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+    spiInit.SPI_DataSize = SPI_DataSize_8b;
+    spiInit.SPI_NSS = SPI_NSS_Soft;
+    spiInit.SPI_FirstBit = SPI_FirstBit_MSB;
+    spiInit.SPI_CRCPolynomial = 7;
+    spiInit.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+
+    if (spi->leadingEdge) {
+        spiInit.SPI_CPOL = SPI_CPOL_Low;
+        spiInit.SPI_CPHA = SPI_CPHA_1Edge;
+    } else {
+        spiInit.SPI_CPOL = SPI_CPOL_High;
+        spiInit.SPI_CPHA = SPI_CPHA_2Edge;
+    }
+
+#ifdef STM32F303xC
+    // Configure for 8-bit reads.
+    SPI_RxFIFOThresholdConfig(spi->dev, SPI_RxFIFOThreshold_QF);
+#endif
+
+    SPI_Init(spi->dev, &spiInit);
+    SPI_Cmd(spi->dev, ENABLE);
+}
+
 void spiInitDevice(SPIDevice device)
 {
     spiDevice_t *spi = &(spiDevice[device]);

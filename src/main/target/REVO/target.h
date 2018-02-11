@@ -109,6 +109,9 @@
 
 #elif defined(REVOLT) || defined(PODIUMF4)
 
+#define USE_GYRO_SPI_DMA
+
+
 #define USE_GYRO_MPU6500
 #define USE_GYRO_SPI_MPU6500
 #define GYRO_MPU6500_ALIGN      CW0_DEG
@@ -224,6 +227,15 @@
 #define USE_SPI
 
 #define USE_SPI_DEVICE_1
+#define SPI1_NSS_PIN            PA4
+#define SPI1_SCK_PIN            PA5
+#define SPI1_MISO_PIN           PA6
+#define SPI1_MOSI_PIN           PA7
+#define USE_SPI_DMA_DEVICE_1
+#define SPI1_TX_DMA_STREAM      DMA2_Stream3
+#define SPI1_RX_DMA_STREAM      DMA2_Stream0
+#define SPI1_TX_DMA_CHANNEL     DMA_Channel_3
+#define SPI1_RX_DMA_CHANNEL     DMA_Channel_3
 
 #define USE_SPI_DEVICE_3
 #define SPI3_NSS_PIN            PB3

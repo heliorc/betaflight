@@ -759,9 +759,13 @@ static void checkForOverflow(gyroSensor_t *gyroSensor, timeUs_t currentTimeUs)
 
 static FAST_CODE void gyroUpdateSensor(gyroSensor_t *gyroSensor, timeUs_t currentTimeUs)
 {
+    //if dma spi read this gets called when read complete
+    #ifndef USE_GYRO_SPI_DMA
     if (!gyroSensor->gyroDev.readFn(&gyroSensor->gyroDev)) {
         return;
     }
+    #endif
+
     gyroSensor->gyroDev.dataReady = false;
 
     if (isGyroSensorCalibrationComplete(gyroSensor)) {
@@ -872,7 +876,14 @@ static FAST_CODE void gyroUpdateSensor(gyroSensor_t *gyroSensor, timeUs_t curren
 
 FAST_CODE void gyroUpdate(timeUs_t currentTimeUs)
 {
+    //dma spi read?
+    #ifdef USE_GYRO_SPI_DMA
+    //call spi dma start read here
+    gyroSensor->gyroDev.readFn(&gyroSensor->gyroDev);
+    //gyroDev.readFn gets set to dma read
+    #else
     gyroUpdateSensor(&gyroSensor1, currentTimeUs);
+    #endif
 }
 
 bool gyroGetAccumulationAverage(float *accumulationAverage)
