@@ -92,7 +92,11 @@ bool mpu6500GyroDetect(gyroDev_t *gyro)
     }
 
     gyro->initFn = mpu6500GyroInit;
+    #ifdef USE_DMA_SPI_DEVICE
+    gyro->readFn = mpuGyroDmaSpiReadStart;
+    #else
     gyro->readFn = mpuGyroRead;
+    #endif
 
     // 16.4 dps/lsb scalefactor
     gyro->scale = 1.0f / 16.4f;

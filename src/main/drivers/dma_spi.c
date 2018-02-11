@@ -4,10 +4,15 @@
 
 #include "platform.h"
 #include "dma_spi.h"
+#include "sensors/gyro.h"
 
 #ifdef USE_DMA_SPI_DEVICE
 
 volatile dma_spi_read_status_t dmaSpiReadStatus = DMA_SPI_READ_UNKOWN;
+
+//must be static to avoid overflow/corruption by DMA
+uint8_t dmaTxBuffer[58];
+uint8_t dmaRxBuffer[58];
 
 static void dmaSpiCsLo(void)
 {
@@ -38,12 +43,13 @@ static void dmaSpicleanupspi(void)
 
 void DMA_SPI_RX_DMA_HANDLER(void)
 {
-    if(DMA_GetITStatus(DMA_SPI_RX_DMA_FLAG_TC))
+    if(DMA_GetITStatus(DMA_SPI_RX_DMA_STREAM, DMA_SPI_RX_DMA_FLAG_TC))
     {
         dmaSpiCsHi();
         dmaSpicleanupspi();
         dmaSpiReadStatus = DMA_SPI_READ_DONE;
-        DMA_ClearITPendingBit(DMA_SPI_RX_DMA_FLAG_TC);         
+        mpuGyroDmaSpiReadFinish();
+        DMA_ClearITPendingBit(DMA_SPI_RX_DMA_STREAM, DMA_SPI_RX_DMA_FLAG_TC);         
     }
 }
 
@@ -135,8 +141,8 @@ void dmaSpiTransmitReceive(uint8_t* txBuffer, uint8_t* rxBuffer, uint32_t size)
     DMA_SetCurrDataCounter(DMA_SPI_RX_DMA_STREAM, size);
 
     //set buffer
-    DMA_SPI_TX_DMA_STREAM->CMAR = (uint32_t)txBuffer;
-    DMA_SPI_RX_DMA_STREAM->CMAR = (uint32_t)rxBuffer;
+    DMA_SPI_TX_DMA_STREAM->M0AR = (uint32_t)txBuffer;
+    DMA_SPI_RX_DMA_STREAM->M0AR = (uint32_t)rxBuffer;
 
     //enable DMA SPI streams
     DMA_Cmd(DMA_SPI_TX_DMA_STREAM, ENABLE);

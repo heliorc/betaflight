@@ -38,6 +38,7 @@
 #include "drivers/sensor.h"
 #include "drivers/system.h"
 #include "drivers/time.h"
+#include "drivers/dma_spi.h"
 
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/accgyro/accgyro_mpu3050.h"
@@ -51,7 +52,7 @@
 #include "drivers/accgyro/accgyro_spi_mpu9250.h"
 #include "drivers/accgyro/accgyro_mpu.h"
 
-
+volatile int dmaSpiGyroDataReady = 0;
 mpuResetFnPtr mpuResetFn;
 
 #ifndef MPU_I2C_INSTANCE
@@ -108,6 +109,7 @@ static void mpuIntExtiHandler(extiCallbackRec_t *cb)
 {
 #ifdef USE_DMA_SPI_DEVICE
     //start dma read
+    gyroDmaSpiStartRead();
 #else
     #ifdef DEBUG_MPU_DATA_READY_INTERRUPT
         static uint32_t lastCalledAtUs = 0;
@@ -170,6 +172,29 @@ bool mpuAccRead(accDev_t *acc)
 
     return true;
 }
+
+#ifdef USE_DMA_SPI_DEVICE
+void mpuGyroDmaSpiReadStart(gyroDev_t * gyro)
+{
+    (void)(gyro); ///not used at this time
+    //no reason not to get acc and gyro data at the same time
+    dmaTxBuffer[0] = MPU_RA_ACCEL_XOUT_H | 0x80;
+    dmaSpiTransmitReceive(dmaTxBuffer, dmaRxBuffer, 15);
+}
+
+void mpuGyroDmaSpiReadFinish(void)
+{
+    //spi rx dma callback
+    acc->ADCRaw[X] = (int16_t)((data[1] << 8) | data[2]);
+    acc->ADCRaw[Y] = (int16_t)((data[3] << 8) | data[4]);
+    acc->ADCRaw[Z] = (int16_t)((data[5] << 8) | data[6]);
+    gyro->gyroADCRaw[X] = (int16_t)((data[9] << 8) | data[10]);
+    gyro->gyroADCRaw[Y] = (int16_t)((data[11] << 8) | data[12]);
+    gyro->gyroADCRaw[Z] = (int16_t)((data[13] << 8) | data[14]);
+    dmaSpiGyroDataReady = 1; //set flag to tell scheduler data is ready
+}
+#endif
+
 
 bool mpuGyroRead(gyroDev_t *gyro)
 {

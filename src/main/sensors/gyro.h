@@ -81,6 +81,7 @@ PG_DECLARE(gyroConfig_t, gyroConfig);
 bool gyroInit(void);
 
 void gyroInitFilters(void);
+void gyroDmaSpiStartRead(void);
 void gyroUpdate(timeUs_t currentTimeUs);
 bool gyroGetAccumulationAverage(float *accumulation);
 const busDevice_t *gyroSensorBus(void);

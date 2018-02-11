@@ -209,6 +209,7 @@ typedef struct mpuDetectionResult_s {
     mpu6050Resolution_e resolution;
 } mpuDetectionResult_t;
 
+extern volatile int dmaSpiGyroDataReady;
 struct gyroDev_s;
 void mpuGyroInit(struct gyroDev_s *gyro);
 gyroOverflow_e mpuGyroCheckOverflow(const struct gyroDev_s *gyro);
@@ -218,3 +219,6 @@ void mpuDetect(struct gyroDev_s *gyro);
 
 struct accDev_s;
 bool mpuAccRead(struct accDev_s *acc);
+#ifdef USE_DMA_SPI_DEVICE
+extern void mpuGyroDmaSpiReadFinish(void);
+#endif
