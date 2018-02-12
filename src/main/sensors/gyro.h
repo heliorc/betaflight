@@ -81,7 +81,10 @@ PG_DECLARE(gyroConfig_t, gyroConfig);
 bool gyroInit(void);
 
 void gyroInitFilters(void);
+#ifdef USE_DMA_SPI_DEVICE
+void gyroDmaSpiFinishRead(void);
 void gyroDmaSpiStartRead(void);
+#endif
 void gyroUpdate(timeUs_t currentTimeUs);
 bool gyroGetAccumulationAverage(float *accumulation);
 const busDevice_t *gyroSensorBus(void);

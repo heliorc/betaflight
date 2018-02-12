@@ -876,11 +876,19 @@ static FAST_CODE void gyroUpdateSensor(gyroSensor_t *gyroSensor, timeUs_t curren
     }
 }
 
+#ifdef USE_DMA_SPI_DEVICE
+FAST_CODE void gyroDmaSpiFinishRead(void)
+{
+    //called by dma callback
+    mpuGyroDmaSpiReadFinish(&gyroSensor1.gyroDev);
+}
+
 FAST_CODE void gyroDmaSpiStartRead(void)
 {
     //called by scheduler
     gyroSensor1.gyroDev.readFn(&gyroSensor1.gyroDev);
 }
+#endif
 
 FAST_CODE void gyroUpdate(timeUs_t currentTimeUs)
 {

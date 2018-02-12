@@ -5,6 +5,8 @@
 #include "platform.h"
 #include "dma_spi.h"
 #include "sensors/gyro.h"
+#include "drivers/accgyro/accgyro_mpu.h"
+
 
 #ifdef USE_DMA_SPI_DEVICE
 
@@ -13,6 +15,18 @@ volatile dma_spi_read_status_t dmaSpiReadStatus = DMA_SPI_READ_UNKOWN;
 //must be static to avoid overflow/corruption by DMA
 uint8_t dmaTxBuffer[58];
 uint8_t dmaRxBuffer[58];
+
+static void gpio_write_pin(GPIO_TypeDef * GPIOx, uint16_t GPIO_Pin, uint32_t pinState)
+{
+    if (pinState != 0)
+    {
+        GPIOx->BSRRL = (uint32_t)GPIO_Pin;
+    }
+    else
+    {
+        GPIOx->BSRRH = (uint32_t)GPIO_Pin;
+    }
+}
 
 static void dmaSpiCsLo(void)
 {
@@ -27,11 +41,12 @@ static void dmaSpiCsHi(void)
 static void dmaSpicleanupspi(void)
 {
     //clear DMA flags
-    DMA_ClearFlag(DMA_SPI_ALL_DMA_FLAGS);
+    DMA_ClearFlag(DMA_SPI_TX_DMA_STREAM, DMA_SPI_TX_DMA_FLAG_ALL);
+    DMA_ClearFlag(DMA_SPI_RX_DMA_STREAM, DMA_SPI_RX_DMA_FLAG_ALL);
 
     //disable DMAs
-    DMA_Cmd(DMA_SPI_TX_DMA,DISABLE);
-    DMA_Cmd(DMA_SPI_RX_DMA,DISABLE);  
+    DMA_Cmd(DMA_SPI_TX_DMA_STREAM,DISABLE);
+    DMA_Cmd(DMA_SPI_RX_DMA_STREAM,DISABLE);  
 
     //disable SPI DMA requests
     SPI_I2S_DMACmd(DMA_SPI_SPI, SPI_I2S_DMAReq_Tx, DISABLE);
@@ -48,7 +63,7 @@ void DMA_SPI_RX_DMA_HANDLER(void)
         dmaSpiCsHi();
         dmaSpicleanupspi();
         dmaSpiReadStatus = DMA_SPI_READ_DONE;
-        mpuGyroDmaSpiReadFinish();
+        gyroDmaSpiFinishRead();
         DMA_ClearITPendingBit(DMA_SPI_RX_DMA_STREAM, DMA_SPI_RX_DMA_FLAG_TC);         
     }
 }
