@@ -17,6 +17,7 @@
 
 #pragma once
 
+
 #define TARGET_BOARD_IDENTIFIER "HESP"
 #define USBD_PRODUCT_STRING     "HELIOSPRING"
 
